@@ -1,11 +1,16 @@
-add_executable(imagetotxl "src/main.cpp")
+add_executable(imagetotxl_exe "src/main.cpp")
 
-target_compile_features(imagetotxl PUBLIC cxx_std_17)
+set_property(TARGET imagetotxl_exe PROPERTY OUTPUT_NAME imagetotxl)
 
-target_link_libraries(imagetotxl PUBLIC
+target_compile_features(imagetotxl_exe PUBLIC cxx_std_17)
+
+target_link_libraries(imagetotxl_exe PUBLIC
     GenesisSDK
     # fmt::fmt
     # argparse::argparse
     # common
 )
 
+set_target_properties(imagetotxl_exe PROPERTIES
+    LINK_FLAGS "/NODEFAULTLIB:LIBCMT /SAFESEH:NO"
+)
