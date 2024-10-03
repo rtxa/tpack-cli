@@ -6,9 +6,8 @@ target_compile_features(imagetotxl_exe PUBLIC cxx_std_17)
 
 target_link_libraries(imagetotxl_exe PUBLIC
     GenesisSDK
-    # fmt::fmt
-    # argparse::argparse
-    # common
+    fmt::fmt
+    argparse::argparse
 )
 
 set_target_properties(imagetotxl_exe PROPERTIES
