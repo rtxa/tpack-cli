@@ -5,5 +5,5 @@ project(
     VERSION 0.1.0
     LANGUAGES CXX)
 
-# add_subdirectory(lib)
+add_subdirectory(lib)
 add_subdirectory(app)
