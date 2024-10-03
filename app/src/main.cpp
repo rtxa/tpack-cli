@@ -1,25 +1,27 @@
 #include <iostream>
 #include <string>
 
+#include "fmt/format.h"
+
 #include "bitmap.h"
 #include "genesis.h"
 #include "ram.h"
 
 int main(int argc, char* argv[]) {
-    std::cout << "Usage: imagetotxl <input image> <output image>" << std::endl;
-    
+    fmt::println("Usage: imagetotxl <input image> <output image>");
+
     const std::string file{"C:/G3D/Genesis3D/v120/levels/gedit.txl"};
     geVFile* vfs = geVFile_OpenNewSystem(
         nullptr, GE_VFILE_TYPE_VIRTUAL, file.c_str(), nullptr,
         GE_VFILE_OPEN_READONLY | GE_VFILE_OPEN_DIRECTORY);
 
     if (!vfs) {
-        std::cerr << "Failed to open virtual file system." << std::endl;
+        fmt::println("Failed to open virtual file system.");
     }
 
     geVFile_Finder* finder = geVFile_CreateFinder(vfs, "*.*");
     if (!finder) {
-        std::cerr << "Could not load textures from " << file << std::endl;
+        fmt::println("Could not load textures from {}", file);
         geVFile_Close(vfs);
         return 1;
     }
@@ -28,7 +30,7 @@ int main(int argc, char* argv[]) {
     while (geVFile_FinderGetNextFile(finder) != GE_FALSE) {
         geVFile_Properties Properties;
         geVFile_FinderGetProperties(finder, &properties);
-        std::cout << properties.Name << std::endl;
+        fmt::println("Texture: {}", properties.Name);
     }
 
     geVFile_Close(vfs);
