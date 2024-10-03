@@ -7,3 +7,7 @@ project(
 
 add_subdirectory(lib)
 add_subdirectory(app)
+
+set_target_properties(imagetotxl PROPERTIES
+    LINK_FLAGS "/NODEFAULTLIB:LIBCMT /SAFESEH:NO"
+)
