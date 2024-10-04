@@ -9,16 +9,17 @@
 #include "ram.h"
 
 /**
- * @brief Add a texture to the virtual file system
+ * @brief Adds a texture to the virtual file system
  *
- * This function reads a bitmap from a file, and writes it to the virtual file
- * system as a single 8-bit bitmap.
+ * Opens a file in the virtual file system, creates a bitmap from it, and writes
+ * the bitmap to the virtual file system in a file with the same name as the
+ * original file, without extension.
  *
- * @param texturePath The path to the bitmap file to read
- * @param txlPath The path to the virtual file system to write to
- * @return true if successful, false otherwise
+ * @param texturePath The path to the file to be added
+ * @param vfs The virtual file system to add the texture to
+ * @return true if the texture was successfully added, false otherwise
  */
-static bool AddTexture(const char* texturePath, const char* txlPath) {
+bool AddTexture(const char* texturePath, geVFile* vfs) {
     /* Open the file in the virtual file system */
     geVFile* file =
         geVFile_OpenNewSystem(nullptr, GE_VFILE_TYPE_DOS, texturePath, nullptr,
@@ -48,23 +49,13 @@ static bool AddTexture(const char* texturePath, const char* txlPath) {
         return false;
     }
 
-    /* Open the txl file */
-    geVFile* vfs =
-        geVFile_OpenNewSystem(NULL, GE_VFILE_TYPE_VIRTUAL, txlPath, NULL,
-                              GE_VFILE_OPEN_CREATE | GE_VFILE_OPEN_DIRECTORY);
-    if (!vfs) {
-        fmt::println("Could not open file {}", txlPath);
-        geBitmap_Destroy(&bitmap);
-        return false;
-    }
-
     // Extract the filename (without extension)
     std::string textureName = std::filesystem::path(texturePath).stem().string();
 
     // Create the file that's gonna hold the bitmap in the virtual file system
     geVFile* tempFile = geVFile_Open(vfs, textureName.c_str(), GE_VFILE_OPEN_CREATE);
     if (!tempFile) {
-        fmt::println("Could not save bitmap {}", textureName.c_str());
+        fmt::println("Could not save bitmap {}", textureName);
         geVFile_Close(vfs);
         geBitmap_Destroy(&bitmap);
         return false;
@@ -74,14 +65,13 @@ static bool AddTexture(const char* texturePath, const char* txlPath) {
     geBoolean WriteResult = geBitmap_WriteToFile(bitmap, tempFile);
     geVFile_Close(tempFile);
     if (WriteResult == GE_FALSE) {
-        fmt::println("Could not save bitmap {}", textureName.c_str());
+        fmt::println("Could not save bitmap {}", textureName);
         geVFile_Close(vfs);
         geBitmap_Destroy(&bitmap);
         return false;
     }
 
     geBitmap_Destroy(&bitmap);
-    geVFile_Close(vfs);
 
     return true;
 }
@@ -125,11 +115,27 @@ bool ListTextures(const std::string& file) {
 int main(int argc, char* argv[]) {
     fmt::println("Usage: imagetotxl <input image> <output image>");
 
-    const std::string texturePath{"C:/G3D/Genesis3D/v120/levels/arena.bmp"};
+    const std::string text1{"C:/G3D/Genesis3D/v120/levels/arena.bmp"};
+    const std::string text2{"C:/G3D/Genesis3D/v120/levels/roca1.bmp"};
+    const std::string text3{"C:/G3D/Genesis3D/v120/levels/roca2.bmp"};
     const std::string txlPath{"C:/G3D/Genesis3D/v120/levels/mytexture.txl"};
 
-    AddTexture(texturePath.c_str(), txlPath.c_str());
-    ListTextures({"C:/G3D/Genesis3D/v120/levels/mytexture.txl"});
+    /* Open the txl file */
+    geVFile* vfs =
+        geVFile_OpenNewSystem(NULL, GE_VFILE_TYPE_VIRTUAL, txlPath.c_str(), NULL,
+                              GE_VFILE_OPEN_CREATE | GE_VFILE_OPEN_DIRECTORY);
+    if (!vfs) {
+        fmt::println("Could not open file {}", txlPath);
+        return 1;
+    }
+
+    AddTexture(text1.c_str(), vfs);
+    AddTexture(text2.c_str(), vfs);
+    AddTexture(text3.c_str(), vfs);
+
+    geVFile_Close(vfs);
+
+    ListTextures(txlPath);
     
     return 0;
 }
