@@ -12,7 +12,7 @@
 namespace fs = std::filesystem;
 
 /**
- * @brief Adds a texture to the virtual file system
+ * @brief Add texture to the virtual file system
  *
  * Opens a file in the virtual file system, creates a bitmap from it, and writes
  * the bitmap to the virtual file system in a file with the same name as the
@@ -23,7 +23,7 @@ namespace fs = std::filesystem;
  * @return true if the texture was successfully added, false otherwise
  */
 bool AddTexture(const char* texturePath, geVFile* vfs) {
-    /* Open the file in the virtual file system */
+    // Open the file in the virtual file system
     geVFile* file =
         geVFile_OpenNewSystem(nullptr, GE_VFILE_TYPE_DOS, texturePath, nullptr,
                               GE_VFILE_OPEN_READONLY);
@@ -33,7 +33,7 @@ bool AddTexture(const char* texturePath, geVFile* vfs) {
         return false;
     }
 
-    /* Create a bitmap from the file */
+    // Create a bitmap from the file
     geBitmap* bitmap = geBitmap_CreateFromFile(file);
     geVFile_Close(file);
     if (!bitmap) {
@@ -41,11 +41,11 @@ bool AddTexture(const char* texturePath, geVFile* vfs) {
         return false;
     }
 
-    /* Get the bitmap info */
+    // Get the bitmap info
     geBitmap_Info primaryInfo, secondaryInfo;
     geBitmap_GetInfo(bitmap, &primaryInfo, &secondaryInfo);
 
-    /* Check if the bitmap is 8-bit */
+    // Check if the bitmap is 8-bit
     if (primaryInfo.Format != GE_PIXELFORMAT_8BIT) {
         fmt::println("{} is not an 8bit bitmap", texturePath);
         geBitmap_Destroy(&bitmap);
@@ -138,7 +138,7 @@ int main(int argc, char* argv[]) {
     std::string inputPath = program.get<std::string>("--input");
     std::string txlPath = program.get<std::string>("--output");
 
-    /* Open the .txl file */
+    // Open the .txl file
     geVFile* vfs = geVFile_OpenNewSystem(
         nullptr, GE_VFILE_TYPE_VIRTUAL, txlPath.c_str(), nullptr,
         GE_VFILE_OPEN_CREATE | GE_VFILE_OPEN_DIRECTORY);
