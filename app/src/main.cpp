@@ -1,12 +1,15 @@
+#include <filesystem>
 #include <iostream>
 #include <string>
-#include <filesystem>
 
+#include "argparse/argparse.hpp"
 #include "fmt/format.h"
 
 #include "bitmap.h"
 #include "genesis.h"
 #include "ram.h"
+
+namespace fs = std::filesystem;
 
 /**
  * @brief Adds a texture to the virtual file system
@@ -50,10 +53,11 @@ bool AddTexture(const char* texturePath, geVFile* vfs) {
     }
 
     // Extract the filename (without extension)
-    std::string textureName = std::filesystem::path(texturePath).stem().string();
+    std::string textureName = fs::path(texturePath).stem().string();
 
     // Create the file that's gonna hold the bitmap in the virtual file system
-    geVFile* tempFile = geVFile_Open(vfs, textureName.c_str(), GE_VFILE_OPEN_CREATE);
+    geVFile* tempFile =
+        geVFile_Open(vfs, textureName.c_str(), GE_VFILE_OPEN_CREATE);
     if (!tempFile) {
         fmt::println("Could not save bitmap {}", textureName);
         geVFile_Close(vfs);
@@ -113,29 +117,48 @@ bool ListTextures(const std::string& file) {
 }
 
 int main(int argc, char* argv[]) {
-    fmt::println("Usage: imagetotxl <input image> <output image>");
+    argparse::ArgumentParser program{"ImageToTxl", "0.1.0"};
 
-    const std::string text1{"C:/G3D/Genesis3D/v120/levels/arena.bmp"};
-    const std::string text2{"C:/G3D/Genesis3D/v120/levels/roca1.bmp"};
-    const std::string text3{"C:/G3D/Genesis3D/v120/levels/roca2.bmp"};
-    const std::string txlPath{"C:/G3D/Genesis3D/v120/levels/mytexture.txl"};
+    program.add_argument("-i", "--input")
+        .required()
+        .help("specify the input folder.");
 
-    /* Open the txl file */
-    geVFile* vfs =
-        geVFile_OpenNewSystem(NULL, GE_VFILE_TYPE_VIRTUAL, txlPath.c_str(), NULL,
-                              GE_VFILE_OPEN_CREATE | GE_VFILE_OPEN_DIRECTORY);
+    program.add_argument("-o", "--output")
+        .required()
+        .help("specify the output file.");
+
+    try {
+        program.parse_args(argc, argv);
+    } catch (const std::runtime_error& ex) {
+        fmt::println("{}", ex.what());
+        std::cout << program;
+        return 1;
+    }
+
+    std::string inputPath = program.get<std::string>("--input");
+    std::string txlPath = program.get<std::string>("--output");
+
+    /* Open the .txl file */
+    geVFile* vfs = geVFile_OpenNewSystem(
+        nullptr, GE_VFILE_TYPE_VIRTUAL, txlPath.c_str(), nullptr,
+        GE_VFILE_OPEN_CREATE | GE_VFILE_OPEN_DIRECTORY);
+
     if (!vfs) {
         fmt::println("Could not open file {}", txlPath);
         return 1;
     }
 
-    AddTexture(text1.c_str(), vfs);
-    AddTexture(text2.c_str(), vfs);
-    AddTexture(text3.c_str(), vfs);
+    // Iterate through the directory and add all the textures to the .txl file
+    for (const auto& entry : fs::directory_iterator(inputPath)) {
+        if (fs::is_regular_file(entry.status())) {
+            AddTexture(entry.path().string().c_str(), vfs);
+        }
+    }
 
     geVFile_Close(vfs);
 
+    // Print all the textures to see if everything went okay
     ListTextures(txlPath);
-    
+
     return 0;
 }
