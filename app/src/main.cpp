@@ -117,7 +117,7 @@ bool ListTextures(const std::string& file) {
 }
 
 int main(int argc, char* argv[]) {
-    argparse::ArgumentParser program{"ImageToTxl", "0.1.0"};
+    argparse::ArgumentParser program{"tpack-cli", "0.1.0"};
 
     program.add_argument("-i", "--input")
         .required()
